@@ -17,6 +17,25 @@ library
   hs-source-dirs:      src
   exposed-modules:     Lib
   build-depends:       base >= 4.7 && < 5
+                     , servant >= 0.7.1
+                     , text >= 1.2.2.1
+                     , base-compat
+                     , mtl
+                     , aeson
+                     , attoparsec
+                     , bytestring
+                     , string-conversions
+                     , time
+                     , http-media
+                     , wai
+                     , warp
+                     , servant-server >= 0.7.1
+                     , directory
+                     , blaze-markup
+                     , blaze-html
+                     , aeson-compat
+                     , lucid
+                     
   default-language:    Haskell2010
 
 executable Servant-Play-exe
@@ -25,6 +44,25 @@ executable Servant-Play-exe
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , Servant-Play
+                     , servant >= 0.7.1
+                     , text >= 1.2.2.1
+                     , base-compat
+                     , mtl
+                     , aeson
+                     , attoparsec
+                     , bytestring
+                     , string-conversions
+                     , time
+                     , http-media
+                     , wai
+                     , warp
+                     , servant-server >= 0.7.1
+                     , directory
+                     , blaze-markup
+                     , blaze-html
+                     , aeson-compat
+                     , lucid
+                     
   default-language:    Haskell2010
 
 test-suite Servant-Play-test
