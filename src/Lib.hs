@@ -34,37 +34,30 @@ import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
 
-data User = User
-  { name :: String
-  , age :: Int
-  , email :: String
-  , registration_date :: Day
-  } deriving (Eq, Show, Generic)
+type API = "search" :> QueryParam "q" String :> Get '[JSON] [SearchResult]
+           :<|> "url" :> ReqBody '[JSON] URL :> Post '[JSON] URL
 
-data SortBy = Age | Name
+data URL = URL { url :: String } deriving Generic
 
-instance ToJSON User
+instance FromJSON URL
+instance ToJSON URL
 
-issac :: User
-issac =  User "Issac Newton" 372 "issac@newton.co.uk" (fromGregorian 1683 3 1)
+data SearchResult = SearchResult {urlResult :: String, textResult :: String} deriving Generic
+instance ToJSON SearchResult
 
-albert :: User
-albert = User "Albert Einstein" 136 "aemc2.org" (fromGregorian 1905 12 1)
 
-users2 :: [User]
-users2 = [issac, albert]
+server :: Server API
+server = search
+         :<|> urlAddr
+  where search :: Maybe String -> Handler [SearchResult]
+        search Nothing = return []
+        search (Just query) = return [SearchResult "http://google.com/" query]
 
-type UserAPI2 = "users" :> Get '[JSON] [User]
-                :<|> "albert" :> Get '[JSON] User
-                :<|> "issac" :> Get '[JSON] User
+        urlAddr :: URL -> Handler URL
+        urlAddr = return 
+          
+genAPI :: Proxy API
+genAPI = Proxy
 
-server2 :: Server UserAPI2
-server2 = return users2
-          :<|> return issac
-          :<|> return albert
-
-userAPI :: Proxy UserAPI2
-userAPI = Proxy
-
-app2 :: Application
-app2 = serve userAPI server2
+app :: Application
+app = serve genAPI server
