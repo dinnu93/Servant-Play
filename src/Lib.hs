@@ -9,6 +9,7 @@
 
 module Lib where
 
+import Elastic
 import Prelude ()
 import Prelude.Compat
 
