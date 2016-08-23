@@ -85,7 +85,7 @@ indexURL (URL u) = do uText <- simpleHTTP (getRequest u) >>= getResponseBody
                       withBH' (BH.indexDocument searchIndex searchMapping BH.defaultIndexDocumentSettings urlPost docId)
 
 searchQuery :: String -> IO [SearchResult]
-searchQuery s = do let query = BH.TermQuery (BH.Term "textRes" (pack s)) Nothing
+searchQuery s = do let query = BH.QueryMatchQuery $ BH.mkMatchQuery (BH.FieldName "textRes") (BH.QueryString (pack s))
                    let search = BH.mkSearch (Just query) Nothing
                    reply <- withBH' (BH.searchByIndex searchIndex search)
                    return . map (\h -> SearchResult (unpack . urlRes . (maybe undefined id) . BH.hitSource $ h) (unpack . textRes . (maybe undefined id) . BH.hitSource $ h)). either (\s -> []) id . fmap (BH.hits . BH.searchHits) . eitherDecode . responseBody $ reply
