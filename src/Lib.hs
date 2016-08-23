@@ -32,7 +32,7 @@ import Text.Blaze
 import Text.Blaze.Html.Renderer.Utf8
 import qualified Data.Aeson.Parser
 import qualified Text.Blaze.Html
-import Data.Text
+import Data.Text hiding (length, head, map)
 import Network.HTTP
 import System.IO.Unsafe
 import Control.Applicative
@@ -42,7 +42,6 @@ import Data.Either (Either(..))
 import Data.Maybe (fromJust)
 import Data.Time.Calendar (Day(..))
 import Data.Time.Clock (secondsToDiffTime, UTCTime(..))
-import Data.Text 
 import GHC.Generics (Generic)
 import Network.HTTP.Client hiding (Proxy(..))
 import qualified Network.HTTP.Types.Status as NHTS
@@ -67,8 +66,6 @@ data UrlText = UrlText { urlRes :: Text
                        , textRes :: Text
                        } deriving (Generic, Eq, Show)
 
-exampleURL = UrlText "http://google.com" "OK, Google!"
-
 instance ToJSON UrlText
 instance FromJSON UrlText
 
@@ -83,10 +80,16 @@ withBH' = BH.withBH defaultManagerSettings searchServer
 indexURL :: URL -> IO BH.Reply
 indexURL (URL u) = do uText <- simpleHTTP (getRequest u) >>= getResponseBody
                       rNumber <- randomRIO (1,10^20) :: IO Integer
-                      let docId = show rNumber
+                      let docId = BH.DocId . pack $ show rNumber
                       let urlPost = UrlText (pack u) (pack uText)
-                      withBH' (BH.indexDocument searchIndex searchMapping BH.defaultIndexDocumentSettings urlPost (BH.DocId $ pack docId))
+                      withBH' (BH.indexDocument searchIndex searchMapping BH.defaultIndexDocumentSettings urlPost docId)
 
+searchQuery :: String -> IO [SearchResult]
+searchQuery s = do let query = BH.TermQuery (BH.Term "textRes" (pack s)) Nothing
+                   let search = BH.mkSearch (Just query) Nothing
+                   reply <- withBH' (BH.searchByIndex searchIndex search)
+                   return . map (\h -> SearchResult (unpack . urlRes . (maybe undefined id) . BH.hitSource $ h) (unpack . textRes . (maybe undefined id) . BH.hitSource $ h)). either (\s -> []) id . fmap (BH.hits . BH.searchHits) . eitherDecode . responseBody $ reply
+                   
 -----------------------
 
 
@@ -99,7 +102,7 @@ data URL = URL { url :: String } deriving Generic
 instance FromJSON URL
 instance ToJSON URL
 
-data SearchResult = SearchResult {urlResult :: String, textResult :: String} deriving Generic
+data SearchResult = SearchResult {urlResult :: String, textResult :: String} deriving (Show, Generic)
 instance ToJSON SearchResult
 
 
@@ -108,7 +111,7 @@ server = search
          :<|> urlAddr
   where search :: Maybe String -> Handler [SearchResult]
         search Nothing = return []
-        search (Just query) = return [SearchResult "http://google.com/" query]
+        search (Just query) = liftIO . searchQuery $ query
 
         urlAddr :: URL -> Handler URL
         urlAddr u = liftIO (indexURL u) >> return u
