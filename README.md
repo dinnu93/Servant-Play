@@ -8,7 +8,7 @@ This piece of software is an API for a search engine written in Haskell using th
 *  Next run the following commands
  * git clone https://github.com/dinnu93/Servant-Play
  * cd Servant-Play
- * /path/to/elasticsearch 
+ * Start elasticsearch
  * stack build
  * stack exec Servant-Play-exe
  
