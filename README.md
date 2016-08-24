@@ -1,7 +1,5 @@
 # Servant-Play
 
-About 
----------
 This piece of software is an API for a search engine written in Haskell using the Elasticsearch, Bloodhound & Servant. All it does is, it takes any URL you POST to it through the API endpoint /url and index it in its datastore(Elasticsearch) after that when you search for a phrase using the /search?q="Search Phrase" it gives the URLs and the fetched contents of that URL in a ranked order of priority 
 
 
